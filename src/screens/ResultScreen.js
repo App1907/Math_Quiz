@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../components/Header';
 import { globalStyles } from '../styles/globalStyles';
@@ -37,6 +37,17 @@ const ResultScreen = ({ route, navigation }) => {
     }
   };
 
+
+  const clearLeaderboard = async () => {
+    try {
+      await AsyncStorage.removeItem('leaderboard');
+      setLeaderboard([]);
+      Alert.alert('Leaderboard Cleared', 'The leaderboard has been successfully cleared.');
+    } catch (error) {
+      console.error('Error clearing leaderboard:', error);
+    }
+  };
+
   useEffect(() => {
     saveScore();
     loadLeaderboard();
@@ -56,10 +67,11 @@ const ResultScreen = ({ route, navigation }) => {
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item, index }) => (
           <View style={styles.leaderboardItem}>
-            <Text style={styles.rank}>#{index + 1}</Text>
+            <Text style={styles.rank}>#{index + 1} </Text>
             <Text style={styles.score}>{item}/10</Text>
           </View>
         )}
+        ListEmptyComponent={<Text style={styles.emptyText}>No scores available.</Text>}
       />
 
       <TouchableOpacity
@@ -67,6 +79,10 @@ const ResultScreen = ({ route, navigation }) => {
         onPress={() => navigation.navigate('Login',{userName})}
       >
         <Text style={globalStyles.buttonText}>Restart Quiz</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={[globalStyles.button, { backgroundColor: '#FF0000' }]} onPress={clearLeaderboard}>
+        <Text style={globalStyles.buttonText}>Clear Leaderboard</Text>
       </TouchableOpacity>
     </View>
   );
@@ -93,6 +109,12 @@ const styles = StyleSheet.create({
   score: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#888',
+    textAlign: 'center',
+    marginTop: 10,
   },
 });
 
